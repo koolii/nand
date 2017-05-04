@@ -41,11 +41,7 @@ Nand(Norも同様)は興味深い性質を持っている
 それはAnd, Or, NotはそれぞれNad(またはNor)だけから作ることが出来るということ
 下記はNandだけでOrを作成している
 
-※ Xor
-2入力が互いに異なる場合に1をかえし、それ以外は0を返す
-If a != b then out=0 else out=1
-
-e.g)
+e.g) それぞれを詳細に落とした状態。1つ1つを分解していく意識で考えればどうして下記のようになるか理解できる
 * x Or y = (x Nand x) Nand (y Nand y)
 * A AND B = NOT ( A NAND B ) = ( A NAND B ) NAND ( A NAND B )
 * NOT A = A NAND A
@@ -62,6 +58,22 @@ e.g)
 #### 基本ゲート
 
 And, Or, Not
+
+
+##### Xor
+2入力が互いに異なる場合に1をかえし、それ以外は0を返す
+If a != b then out=0 else out=1
+
+##### マルチプレクサ
+
+3入力のゲートだが、「データビット」と呼ばれる2つの入力から1つを選択して出力する
+選択には「選択ビット」(=sel)という入力が1つ与えられる
+If sel=0 then out=a else out=b
+
+##### デマルチプレクサ
+
+1つの入力と「選択ビット」によって、出力を2つの内、どちらかに振り分ける
+IF sel=0 then {a=in, b=0} else {a=0, b=in}
 
 #### 複合ゲート
 
