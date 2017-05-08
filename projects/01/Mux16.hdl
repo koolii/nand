@@ -4,8 +4,8 @@
 // File name: projects/01/Mux16.hdl
 
 /**
- * 16-bit multiplexor: 
- * for i = 0..15 out[i] = a[i] if sel == 0 
+ * 16-bit multiplexor:
+ * for i = 0..15 out[i] = a[i] if sel == 0
  *                        b[i] if sel == 1
  */
 
@@ -15,4 +15,69 @@ CHIP Mux16 {
 
     PARTS:
     // Put your code here:
+    Not(in=sel, out=nsel);
+
+    And(a=nsel, b=a[0], out=ele101);
+    And(a=sel, b=b[0], out=ele201);
+    Or(a=ele101, b=ele201, out=out[0]);
+
+    And(a=nsel, b=a[1], out=ele102);
+    And(a=sel, b=b[1], out=ele202);
+    Or(a=ele102, b=ele202, out=out[1]);
+
+    And(a=nsel, b=a[2], out=ele103);
+    And(a=sel, b=b[2], out=ele203);
+    Or(a=ele103, b=ele203, out=out[2]);
+
+    And(a=nsel, b=a[3], out=ele104);
+    And(a=sel, b=b[3], out=ele204);
+    Or(a=ele104, b=ele204, out=out[3]);
+
+    And(a=nsel, b=a[4], out=ele105);
+    And(a=sel, b=b[4], out=ele205);
+    Or(a=ele105, b=ele205, out=out[4]);
+
+    And(a=nsel, b=a[5], out=ele106);
+    And(a=sel, b=b[5], out=ele206);
+    Or(a=ele106, b=ele206, out=out[5]);
+
+    And(a=nsel, b=a[6], out=ele107);
+    And(a=sel, b=b[6], out=ele207);
+    Or(a=ele107, b=ele207, out=out[6]);
+
+    And(a=nsel, b=a[7], out=ele108);
+    And(a=sel, b=b[7], out=ele208);
+    Or(a=ele108, b=ele208, out=out[7]);
+
+    And(a=nsel, b=a[8], out=ele109);
+    And(a=sel, b=b[8], out=ele209);
+    Or(a=ele109, b=ele209, out=out[8]);
+
+    And(a=nsel, b=a[9], out=ele110);
+    And(a=sel, b=b[9], out=ele210);
+    Or(a=ele110, b=ele210, out=out[9]);
+
+    And(a=nsel, b=a[10], out=ele111);
+    And(a=sel, b=b[10], out=ele211);
+    Or(a=ele111, b=ele211, out=out[10]);
+
+    And(a=nsel, b=a[11], out=ele112);
+    And(a=sel, b=b[11], out=ele212);
+    Or(a=ele112, b=ele212, out=out[11]);
+
+    And(a=nsel, b=a[12], out=ele113);
+    And(a=sel, b=b[12], out=ele213);
+    Or(a=ele113, b=ele213, out=out[12]);
+
+    And(a=nsel, b=a[13], out=ele114);
+    And(a=sel, b=b[13], out=ele214);
+    Or(a=ele114, b=ele214, out=out[13]);
+
+    And(a=nsel, b=a[14], out=ele115);
+    And(a=sel, b=b[14], out=ele215);
+    Or(a=ele115, b=ele215, out=out[14]);
+
+    And(a=nsel, b=a[15], out=ele116);
+    And(a=sel, b=b[15], out=ele216);
+    Or(a=ele116, b=ele216, out=out[15]);
 }
