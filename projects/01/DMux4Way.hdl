@@ -11,10 +11,13 @@
  *                {0, 0, 0, in} if sel == 11
  */
 
+// 大事なのはinが0の時はDMuxを使って値を出した時に必ず0になるということ
 CHIP DMux4Way {
     IN in, sel[2];
     OUT a, b, c, d;
 
     PARTS:
-    // Put your code here:
+    DMux(in=in, sel=sel[0], a=x, b=y);
+    DMux(in=x, sel=sel[1], a=a, b=c);
+    DMux(in=y, sel=sel[1], a=b, b=d);
 }
