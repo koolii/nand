@@ -57,5 +57,10 @@ CHIP ALU {
    Not16(in=zyo, out=nzyo);
    Mux16(a=zyo, b=nzyo, sel=ny, out=zyy);
 
+   // phase2
+   // Add
+   Add16(a=zxx, b=zyy, out=add);
+   // &&
+   And66(a=zxx, b=zyy, out=and);
 
 }
