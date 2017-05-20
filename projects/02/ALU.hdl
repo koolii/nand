@@ -43,32 +43,63 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
+   // TODO my hdl code
    // phase1
-   Mux16(a=x, b[0..15]=false, sel=zx, out=zxo);
-   Mux16(a=y, b[0..15]=false, sel=zy, out=zyo);
+   //   Mux16(a=x, b[0..15]=false, sel=zx, out=zxo);
+   //   Mux16(a=y, b[0..15]=false, sel=zy, out=zyo);
 
    // phase2
    // x
    // 条件分岐が発生する場合は、分岐はMuxで担当し、入力(inのa&&b)に答えとなる値を与える
-   Not16(in=zxo, out=nzxo);
-   Mux16(a=zxo, b=nzxo, sel=nx, out=zxx);
+   //   Not16(in=zxo, out=nzxo);
+   //   Mux16(a=zxo, b=nzxo, sel=nx, out=zxx);
 
    // y
-   Not16(in=zyo, out=nzyo);
-   Mux16(a=zyo, b=nzyo, sel=ny, out=zyy);
+   //   Not16(in=zyo, out=nzyo);
+   //   Mux16(a=zyo, b=nzyo, sel=ny, out=zyy);
 
    // phase3
    // Add
-   Add16(a=zxx, b=zyy, out=add);
+   //   Add16(a=zxx, b=zyy, out=add);
    // &&
-   And16(a=zxx, b=zyy, out=and);
-   Mux16(a=add, b=and, sel=f, out=bitwise);
+   //   And16(a=zxx, b=zyy, out=and);
+   //   Mux16(a=add, b=and, sel=f, out=bitwise);
 
    // phase4 reverse
-   Not16(in=bitwise, out=notOut);
-   Mux16(a=bitwise, b=notOut, sel=no, out=out);
+   //   Not16(in=bitwise, out=notOut);
+   //   Mux16(a=bitwise, b=notOut, sel=no, out=out);
 
    // phase5
-   Mux16(a[0..15]=true, b[0..15]=false, sel=out, out[0]=zr);
+   //   Mux16(a[0..15]=true, b[0..15]=false, sel=out, out[0]=zr);
 
+
+   // cheat
+   // if (zx == 1) set x = 0        // 16-bit constant
+       Mux16(a=x, b[0..15]=false, sel=zx, out=xx);
+   // if (nx == 1) set x = !x       // bitwise not
+       Not16(in=xx, out=notx);
+       Mux16(a=xx, b=notx, sel=nx, out=xxx);
+
+   // if (zy == 1) set y = 0        // 16-bit constant
+       Mux16(a=y, b[0..15]=false, sel=zy, out=yy);
+   // if (ny == 1) set y = !y       // bitwise not
+       Not16(in=yy, out=noty);
+       Mux16(a=yy, b=noty, sel=ny, out=yyy);
+
+   // if (f == 1)  set out = x + y  // integer 2's complement addition
+   // if (f == 0)  set out = x & y  // bitwise and
+       Add16(a=xxx, b=yyy, out=xplusy);
+       And16(a=xxx, b=yyy, out=xandy);
+       Mux16(a=xandy, b=xplusy, sel=f, out=fout);
+
+   // if (no == 1) set out = !out   // bitwise not
+   // if (out < 0) set ng = 1
+       Not16(in=fout, out=notfout);
+       Mux16(a=fout, b=notfout, sel=no, out=out, out[0..7]=aout, out[8..15]=bout, out[15]=ng);
+
+   // if (out == 0) set zr = 1
+       Or8Way(in=aout, out=zr1);
+       Or8Way(in=bout, out=zr2);
+       Or(a=zr1, b=zr2, out=any);
+       Not(in=any, out=zr);
 }
