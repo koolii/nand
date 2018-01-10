@@ -70,8 +70,4 @@ CHIP ALU {
 
        // output zr
        And16(a=out, b=false, out=zr);
-
-       // out == 0
-       And16(a=noOut, b=false, out=isZero);
-       Mux(a=false, b=true, sel=isZero, out=zr);
 }
