@@ -23,8 +23,8 @@
 // if (f == 1)  set out = x + y  // integer 2's complement addition
 // if (f == 0)  set out = x & y  // bitwise and
 // if (no == 1) set out = !out   // bitwise not
-// if (out == 0) set zr = 1
-// if (out < 0) set ng = 1
+// if (out == 0) set zr = 1 else zr = 0
+// if (out < 0) set ng = 1 else ng = 0
 
 CHIP ALU {
     IN
@@ -64,4 +64,8 @@ CHIP ALU {
        // no part
        Not16(in=fOut, out=nfOut);
        Mux16(a=fOut, b=nfOut, sel=no, out=noOut);
+
+       // out == 0
+       And16(a=noOut, b=false, out=isZero);
+       Mux(a=false, b=true, sel=isZero, out=zr);
 }
