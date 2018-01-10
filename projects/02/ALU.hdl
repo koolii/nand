@@ -55,4 +55,9 @@ CHIP ALU {
        // ny part
        Not16(in=y, out=noty);
        Mux16(a=y, b=noty, sel=ny, out=nyout);
+
+       // f part
+       Add16(a=x, b=y, out=addedxy);
+       And16(a=x, b=y, out=andedxy);
+       Mux16(a=addedxy, b=andedxy, sel=f, out=fout);
 }
