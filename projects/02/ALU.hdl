@@ -63,9 +63,11 @@ CHIP ALU {
 
        // no part
        Not16(in=fOut, out=nfOut);
-       Mux16(a=fOut, b=nfOut, sel=no, out=noOut);
+       Mux16(a=fOut, b=nfOut, sel=no, out=out);
 
-       // out == 0
-       And16(a=noOut, b=false, out=isZero);
-       Mux(a=false, b=true, sel=isZero, out=zr);
+       // output ng
+       And(a=out[15], b=true, out=ng);
+
+       // output zr
+       And16(a=out, b=false, out=zr);
 }
