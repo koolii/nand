@@ -60,18 +60,24 @@ CHIP ALU {
 
 
        // f part
-       Add16(a=nxOut, b=nyOut, out=addXY);
        And16(a=nxOut, b=nyOut, out=andXY);
-       Mux16(a=addXY, b=andXY, sel=f, out=fOut);
-
+       Add16(a=nxOut, b=nyOut, out=addXY);
+       Mux16(a=andXY, b=addXY, sel=f, out=fOut);
 
        // no part
        Not16(in=fOut, out=nfOut);
-       Mux16(a=fOut, b=nfOut, sel=no, out=out);
-
-       // output ng
-       And(a=out[15], b=true, out=ng);
+       Mux16(a=fOut, b=nfOut, sel=no, out=out, out[0..7]=outPartial1, out[8..15]=outPartial2, out[15]=highest);
 
        // output zr
-       And16(a=out, b=false, out=zr);
+       Or8Way(in=outPartial1, out=isMoreThanZero1);
+       Or8Way(in=outPartial2, out=isMoreThanZero2);
+       Or(a=isMoreThanZero1, b=isMoreThanZero2, out=tmp);
+       Not(in=tmp, out=zr);
+
+       // output ng
+       And(a=highest, b=true, out=ng);
+
+       // これは結構良い。複数のビットを１つにまとめることが出来る
+       // output out (combine all)
+       // And16(a[0..7]=outPartial1, a[8..14]=outPartial2, a[15]=highest, b=true, out=out);
 }
