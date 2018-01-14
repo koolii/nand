@@ -27,12 +27,14 @@ CHIP RAM8 {
     Mux16(a=false, b=in, sel=g, out=gout);
     Mux16(a=false, b=in, sel=h, out=hout);
 
-    Register(in=aout, load=load, out=out);
-    Register(in=bout, load=load, out=out);
-    Register(in=cout, load=load, out=out);
-    Register(in=dout, load=load, out=out);
-    Register(in=eout, load=load, out=out);
-    Register(in=fout, load=load, out=out);
-    Register(in=gout, load=load, out=out);
-    Register(in=hout, load=load, out=out);
+    Register(in=aout, load=load, out=out1);
+    Register(in=bout, load=load, out=out2);
+    Register(in=cout, load=load, out=out3);
+    Register(in=dout, load=load, out=out4);
+    Register(in=eout, load=load, out=out5);
+    Register(in=fout, load=load, out=out6);
+    Register(in=gout, load=load, out=out7);
+    Register(in=hout, load=load, out=out8);
+
+    Mux8Way16(a=out1, b=out2, c=out3, d=out4, e=out5, f=out6, g=out7, h=out8, sel=address, out=out);
 }
