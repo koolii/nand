@@ -11,22 +11,17 @@
  * else                    out[t+1] = out[t] -- 4
  */
 
+// http://nand2tetris-questions-and-answers-forum.32033.n3.nabble.com/PC-Hdl-td4026543.html
+
 CHIP PC {
     IN in[16],load,inc,reset;
     OUT out[16];
 
     PARTS:
     // Put your code here:
-
-    // 1?
-    Or16(a=false, b=false, out=oReset);
-
-    // 3
-    Inc16(in=in, out=oIncrement);
-
-    // 2?
-    // 4
-    Register(in=in, load=load, out=oRegister);
-
-    Mux4Way16(a=oRegister, b=oIncrement, c=oReset, d=oRegister, sel[0]=reset, sel[1]=inc, out=out);
+    Inc16(in=pre, out=incremented); // 3
+    Mux16(a=pre, b=incremented, sel=inc, out=oIncrement); // 3
+    Mux16(a=oIncrement, b=in, sel=load, out=oLoad); // 2
+    Mux16(a=oLoad, b=false, sel=reset, out=oReset); // 1
+    Register(in=oReset, load=true, out=out, out=pre); // 4
 }
