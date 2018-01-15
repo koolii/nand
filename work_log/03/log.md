@@ -27,3 +27,15 @@ DMux8Wayで入力をloadにすることで、その結果をレジスタに設�
 RAM64.hdlにも記載したが、addressは6ビット与えられていて、
 最初の3ビットがRAM8の6個の内、どれを選ぶか選択する
 最後の3ビットがRAM8に与えられる変数となる
+
+### PC
+
+```
+ * if      (reset[t] == 1) out[t+1] = 0
+ * else if (load[t] == 1)  out[t+1] = in[t]
+ * else if (inc[t] == 1)   out[t+1] = out[t] + 1  (integer addition)
+ * else                    out[t+1] = out[t]
+```
+
+上記の擬似コードのとおりに作成するのだが、4つの出力の内1つをoutに流すということで、Mux4Way16ゲートで対応出来ないだろうか?
+(ただし、selが2つ必要なので、入力ビットをselとしても使用する気がする)
