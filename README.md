@@ -1,7 +1,9 @@
 ### HLDのシミュレータを起動する
 
 ```bash
-$ sh ./tools/HardwareSimulator.sh
+❯❯❯ sh ./tools/HardwareSimulator.sh
+❯❯❯ sh ./tools/Assembler.sh
+❯❯❯ sh ./tools/CPUEmulator.sh
 ```
 
 ### HDLのゲート
