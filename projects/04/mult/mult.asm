@@ -8,35 +8,36 @@
 
 // Put your code here.
 
+// 初期化処理
 @2
 M=0 // 最終的にRAM[2]に結果を挿入するので、まずは0で初期化
 
 @i
 M=1 // ループ変数を初期化
 
+// ループ内部処理
 (LOOP)
 @i
 D=M // Dにiの値を一時的に確保
 
-// 終了条件(MULT)
+// judge of break
 @1 // ループを回す回数
-D=D-M
+D=D-M // 引き算をしている理由はJGTの条件が真になるのはD==0の時だから
 @END
 D;JGT // (num of loop - @1 == 0) 一応これで終了条件は完了
 
-
-// 終了条件(DEFAULT)
-@100
-D=D-A // Aに100を代入 && i = i - 100
-@END
-D;JGT // 100回ループさせる
+// multiplication
+@0
+D=M
+@2
+M=M+D // @0の値を@2に加算する(@0自身に加算してしまうと、ループで次第に値が大きくなってしまうため、@2に直接足し合わせていく)
 
 @i
 M=M+1 // インクリメント
 
 @LOOP
-0;JMP // LOOPを続ける
+0;JMP // １つ前にAレジスタに代入したLOOPにjumpする
 
 (END)
 @END
-0;JMP // fin
+0;JMP // fin (infinite loop is generally method of finish process in Hack machine language.)
