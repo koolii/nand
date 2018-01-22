@@ -62,3 +62,8 @@ Hack program
 
 http://www1.idc.ac.il/tecs/lectures/chapter04.pdf
 http://phoenix.goucher.edu/~kelliher/f2015/cs220/project04.pdf
+
+
+## Fill
+@SCREENラベルから取得できる値が何なのかがイマイチ、理解出来ていないためか (512 * 256 / 16)で16で割っている理由が理解しきれていない
+ISSUEにも書いたが２周目の際に詳しく？見たい
