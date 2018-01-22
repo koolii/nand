@@ -4,28 +4,62 @@
 // the screen should remain fully black as long as the key is pressed.
 // When no key is pressed, the program clears the screen, i.e. writes
 // "white" in every pixel;
-// the screen should remain fully clear as long as no key is pressed.
 
-(BLACK)
-@SCREEN
-A=1
-@LOOP
-0;JMP
-
-(WHITE)
-@SCREEN
-A=1
-@LOOP
-0;JMP
+// @LOOP_NUM M=8191 // (512 * 256 / 16) - 1 ゼロスタートだから1だけマイナス
 
 (LOOP)
-@KBD
+@SCREEN
 D=A
-@BLACK
-D;JNE // ゼロだったら黒くする
+
+@idx
+M=D
+// @idxに@SCREENのインデックスを渡す
+// これはラベルなので全体でアクセス可能
+
+@KBD
+D=M
 
 @WHITE
-D;JEQ // ゼロ以外だったら黒くする
+D;JEQ
+@BLACK
+D;JMP
+
+(WHITE)
+@idx
+A=M
+M=0 // Memory[@idx] = 0(white)
+
+@idx
+M=M+1
+D=M // next pixel index (next)
+
+@SCREEN
+D=D-A // next = next - @SCREEN
+@8191
+D=D-A // next = next - 8191
 
 @LOOP
+D;JGT // break
+
+@WHITE
+0;JMP // loop by myself
+
+
+(BLACK)
+@idx
+A=M
+M=-1
+
+@idx
+M=M+1
+D=M
+
+@SCREEN
+D=D-A
+@8191
+D=D-A
+
+@LOOP
+D;JGT
+@BLACK
 0;JMP
