@@ -5,24 +5,21 @@
 // When no key is pressed, the program clears the screen, i.e. writes
 // "white" in every pixel;
 
-// @LOOP_NUM M=8191 // (512 * 256 / 16) - 1 ゼロスタートだから1だけマイナス
-
 (LOOP)
 @SCREEN
 D=A
 
 @idx
 M=D
-// @idxに@SCREENのインデックスを渡す
+// @idxに@SCREENのポインタ？を渡す
 // これはラベルなので全体でアクセス可能
 
 @KBD
 D=M
-
 @WHITE
 D;JEQ
 @BLACK
-D;JMP
+D;JLT
 
 (WHITE)
 @idx
@@ -31,35 +28,33 @@ M=0 // Memory[@idx] = 0(white)
 
 @idx
 M=M+1
-D=M // next pixel index (next)
+D=M // increment pixel
 
 @SCREEN
-D=D-A // next = next - @SCREEN
+D=D-A
+
 @8191
-D=D-A // next = next - 8191
+D=D-A // @SCREEN - 8191
 
 @LOOP
-D;JGT // break
+D;JGT
 
 @WHITE
-0;JMP // loop by myself
+0;JMP
 
 
 (BLACK)
 @idx
 A=M
 M=-1
-
 @idx
 M=M+1
 D=M
-
 @SCREEN
 D=D-A
 @8191
 D=D-A
-
 @LOOP
 D;JGT
-@BLACK
+@BLACKE
 0;JMP
