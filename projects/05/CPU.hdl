@@ -37,8 +37,6 @@ CHIP CPU {
         pc[15];          // address of next instruction
     PARTS:
     // Put your code here:
-    // 一番左のビットが0なら、命令に埋め込まれた15ビットの定数値がAレジスタに設定
-    // 一番左のビットが1なら、計算命令になり、a,c,d,jは制御ビットとして扱う(ALUとレジスタに命令を実行させる)
     Mux16(a=preOutM, b=instruction, sel=instruction[15], out=instructionOut);
 
     // 簡単な所そうなPCから(`in, load, inc`は一旦放置)
