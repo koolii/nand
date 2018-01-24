@@ -11,7 +11,7 @@ AとCのどちらの命令なのか判定させる、多分AなのかCなのか�
 
 1ビットを抜き出すなら,AndゲートでA命令なのかC命令なのか判定出来る
 ```
-And(a=instruction[15], b=true, out=isA);
+And(a=instruction[15], b=true, out=isC);
 ```
 
 ## Aレジスタの格納
@@ -28,7 +28,7 @@ ARegister(in[16], load, out[16]);
 ```
 
 ```
-Mux16(a=instruction, b=preOutM, sel=isA, out=address);
+Mux16(a=instruction, b=preOutM, sel=isC, out=address);
 ARegister(in=address, load=???, out=out);
 ```
 
