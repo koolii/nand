@@ -61,7 +61,7 @@ CHIP CPU {
     // ALUに渡す値を決定(A/M)
     // 設計図にはaビットでAレジスタかメモリ入力か判定出来るとある(P103)
     // => だからinstructionのaビットに該当する部分を設定する(aビットが何をしているのかは4章を確認すること)
-    Mux16(a=inM, b=oARegister, sel=instruction[11] out=inALU_B);
+    Mux16(a=inM, b=oARegister, sel=instruction[11] out=oAorM);
 
     // dビットがALUの結果をレジスタに書き込むかどうかを指定
     // なのでdビットはDRegisterのloadビットとして使う(ただ、dビットは3ビットある)
@@ -76,7 +76,20 @@ CHIP CPU {
     // P103を確認する
     // cビットがALUがどの関数を実行するのか
     // 一応だけど、aビットが0の時は算術計算にAを用いて、1の時にはMの値を使う(Mux16でやってる内容)
-    ALU(x=oDRegister, y=inALU_B);
+    // ALUの制御ビット(P36)とcompビット(P71)を見比べると下記のように分かった
+    // (zx, nx, zy, ny, f, no) == (c1, c2, c3, c4, c5, c6)
+    // 後は、ALUで言う所のx/yにどっちを割り当てるのかを正しくできれば良さそう
+    // zx, zero the x input?
+    // nx, negate the x input?
+    // zy, zero the y input?
+    // ny, negate the y input?
+    // f,  compute out = x + y (if 1) or x & y (if 0)
+    // no; negate the out output?
+    ALU(x=oDRegister, y=oAorM
+        zx=instruction[11], nx=instruction[10],
+        zy=instruction[9], ny=instruction[8],
+        f=instruction[7], no=instruction[6],
+        out=oALU, zr=oZR, ng=oNG);
 
     // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
     // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
