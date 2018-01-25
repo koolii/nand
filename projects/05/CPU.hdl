@@ -63,8 +63,11 @@ CHIP CPU {
 
     // dビットがALUの結果をレジスタに書き込むかどうかを指定
     // なのでdビットはDRegisterのloadビットとして使う(ただ、dビットは3ビットある)
+    // P72を見たところ、d1,d2,d3の組み合わせの内、Dレジスタに値を設定するかどうかはd2ビットが1なのかどうかで判定している
     // 先にoDRegisterを定義しておかないとALUゲート時にエラーが出るから移動させる
-    DRegister(in=oALU, load=ddd, out=oDRegister);
+    // instruction[5] == d2ビット
+    And(a=instruction[5], b=true, out=loadDRegister);
+    DRegister(in=oALU, load=loadDRegister, out=oDRegister);
 
     // ALU本体
     // P103を確認する
