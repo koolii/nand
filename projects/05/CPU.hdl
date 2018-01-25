@@ -44,7 +44,8 @@ CHIP CPU {
     Not(in=instC, out=instA);
 
     // instAが0の時に、A命令(命令をAレジスタに挿入)、1ならC命令の制御ビットになる
-    Mux16(a=instruction, b=preOut, sel=instA, out=inARegister);
+    // TODO ここは後で移動させる、なぜならoALUがこの時点で定義されていないから
+    Mux16(a=instruction, b=oALU, sel=instA, out=inARegister);
 
     // loadビットは現状の値を保持か新規値を代入するかのどちらか
     // A命令の時にAレジスタに値を設定すれば良いので、instAをloadビットに割当れば
@@ -60,9 +61,15 @@ CHIP CPU {
     // => だからinstructionのaビットに該当する部分を設定する(aビットが何をしているのかは4章を確認すること)
     Mux16(a=inM, b=oARegister, sel=instruction[11] out=inALU_B);
 
+    // dビットがALUの結果をレジスタに書き込むかどうかを指定
+    // なのでdビットはDRegisterのloadビットとして使う(ただ、dビットは3ビットある)
+    // 先にoDRegisterを定義しておかないとALUゲート時にエラーが出るから移動させる
+    DRegister(in=oALU, load=ddd, out=oDRegister);
+
     // ALU本体
     // P103を確認する
-    ALU(y=inALU_B);
+    // cビットがALUがどの関数を実行するのか
+    ALU(x=oDRegister, y=inALU_B);
 
     // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
     // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
