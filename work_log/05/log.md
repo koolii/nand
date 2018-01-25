@@ -52,4 +52,31 @@ Mux16(a=instruction, b=preOutM, sel=isC, out=address);
 ARegister(in=address, load=???, out=out);
 ```
 
+## PCゲート
+```
+/**
+ * A 16-bit counter with load and reset control bits.
+ * if      (reset[t] == 1) out[t+1] = 0 -- 1
+ * else if (load[t] == 1)  out[t+1] = in[t] -- 2
+ * else if (inc[t] == 1)   out[t+1] = out[t] + 1  (integer addition) -- 3
+ * else                    out[t+1] = out[t] -- 4
+ */
+```
+これはPCゲートの中身を書き出しているもの、そして下記はCPU内部のPCのつなぎ方
+
+```
+If jump(t) then PC(t) = A(t − 1) else PC(t) = PC(t−1)+1
+```
+
+だからjumpの時はinであるAの値を渡すように組めばOKだと思う(ただ、loadにjumpを渡すんだが、どれを渡すのかわからんjumpは3bitあるよね？)
+
+```
+j1,j2,j3が全て1だったら、JUMPを行うと言う命令になる。その他のニーモニック(P73)のものは違うと思う
+And(a=j1, b=true, out=j1o);
+And(a=j2, b=true, out=j2o);
+And(a=j3, b=true, out=j3o);
+PC(in=outA, load=jump, inc=true, reset=reset, out=outPC);
+```
+
+
     Mux16(a=preOutM, b=instruction, sel=instruction[15], out=instructionOut);
