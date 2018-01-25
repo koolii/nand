@@ -37,8 +37,34 @@ CHIP CPU {
         pc[15];          // address of next instruction
     PARTS:
     // Put your code here:
-    Mux16(a=preOutM, b=instruction, sel=instruction[15], out=instructionOut);
 
-    // 簡単な所そうなPCから(`in, load, inc`は一旦放置)
-    PC(in=false, load=false, inc=false, reset=reset, out=pc);
+    // 夫々0か1を取る
+    // もしもC命令を実行するなら、instCが1になり、instAが0になるし、その逆も然り
+    And(a=instruction[15], b=true, out=instC);
+    Not(in=instC, out=instA);
+
+    // instAが0の時に、A命令(命令をAレジスタに挿入)、1ならC命令の制御ビットになる
+    Mux16(a=instruction, b=preOut, sel=instA, out=inARegister);
+
+    // loadビットは現状の値を保持か新規値を代入するかのどちらか
+    // A命令の時にAレジスタに値を設定すれば良いので、instAをloadビットに割当れば
+    // inRegisterの中身は必然的にinstructionになるから正しいはず
+    ARegister(in=inARegister, load=instA, out=oARegister);
+
+    // PCゲートのinはOARegisterになるのは設計図に書いてあるからそのまま
+    // loadビットにはgotoの様にジャンプするかどうかの判定結果が入り
+    // incにはそのままでインクリメントするかどうかが設定される
+
+    // ALUに渡す値を決定(A/M)
+    // 設計図にはaビットでAレジスタかメモリ入力か判定出来るとある(P103)
+    // => だからinstructionのaビットに該当する部分を設定する(aビットが何をしているのかは4章を確認すること)
+    Mux16(a=inM, b=oARegister, sel=instruction[11] out=inALU_B);
+
+    // ALU本体
+    // P103を確認する
+    ALU(y=inALU_B);
+
+    // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
+    // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
+    PC(in=oARegister, load=load, inc=inc, reset=reset, out=incrementOrReset);
 }
