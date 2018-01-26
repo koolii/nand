@@ -90,7 +90,8 @@ CHIP CPU {
         zy=instruction[9], ny=instruction[8],
         f=instruction[7], no=instruction[6],
         out=oALU, zr=oZR, ng=oNG);
-    // P35
+    // TODO P35を参照して、夫々の出力値を確認しているが、これで何を判定するかが分からない
+    // そもそものALUの入力値になるM・Aはなんだっけと言うところから始める
     // zr: out=0の場合のみtrue(16ビットの等号比較)
     // ng: out<0の場合のみtrue(16ビットの負判定)
 
