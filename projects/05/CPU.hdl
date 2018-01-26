@@ -53,7 +53,8 @@ CHIP CPU {
     // inRegisterの中身は必然的にinstructionになるから正しいはず
     // DRegisterの所にも書いたが、d1ビットはAレジスタに値を確保するかどうかを
     // 判定するとのこと=>一旦d1(instruction[5])に変更
-    ARegister(in=inARegister, load=instruction[5], out=oARegister);
+    // 頭から15ビット分はaddressMへの定数として使われる(A命令の時15ビットが定数として使われると言う部分が適合する)
+    ARegister(in=inARegister, load=instruction[5], out=oARegister, out[0..14]=addressM);
 
     // PCゲートのinはOARegisterになるのは設計図に書いてあるからそのまま
     // loadビットにはgotoの様にジャンプするかどうかの判定結果が入り
