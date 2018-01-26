@@ -37,6 +37,7 @@ CHIP CPU {
         pc[15];          // address of next instruction
     PARTS:
     // Put your code here:
+    // 1[15] 1 1 a c1 c2 c3 c4 c5[7] c6 d1 d2 d3 j1 j2 j3[0]
 
     // 夫々0か1を取る
     // もしもC命令を実行するなら、instCが1になり、instAが0になるし、その逆も然り
@@ -68,8 +69,8 @@ CHIP CPU {
     // P72を見たところ、d1,d2,d3の組み合わせの内、Dレジスタに値を設定するかどうかはd2ビットが1なのかどうかで判定している
     // また、d1に関しては1担っていると、Aレジスタに値を設定するということもわかった()
     // 先にoDRegisterを定義しておかないとALUゲート時にエラーが出るから移動させる
-    // instruction[5] == d2ビット
-    DRegister(in=oALU, load=instruction[5], out=oDRegister);
+    // instruction[4] == d2ビット
+    DRegister(in=oALU, load=instruction[4], out=oDRegister);
 
     // ALU本体
     // P103を確認する
@@ -89,6 +90,9 @@ CHIP CPU {
         zy=instruction[9], ny=instruction[8],
         f=instruction[7], no=instruction[6],
         out=oALU, zr=oZR, ng=oNG);
+    // P35
+    // zr: out=0の場合のみtrue(16ビットの等号比較)
+    // ng: out<0の場合のみtrue(16ビットの負判定)
 
     // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
     // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
