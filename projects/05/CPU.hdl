@@ -69,8 +69,7 @@ CHIP CPU {
     // また、d1に関しては1担っていると、Aレジスタに値を設定するということもわかった()
     // 先にoDRegisterを定義しておかないとALUゲート時にエラーが出るから移動させる
     // instruction[5] == d2ビット
-    And(a=instruction[5], b=true, out=loadDRegister);
-    DRegister(in=oALU, load=loadDRegister, out=oDRegister);
+    DRegister(in=oALU, load=instruction[5], out=oDRegister);
 
     // ALU本体
     // P103を確認する
