@@ -52,8 +52,8 @@ CHIP CPU {
     // A命令の時にAレジスタに値を設定すれば良いので、instAをloadビットに割当れば
     // inRegisterの中身は必然的にinstructionになるから正しいはず
     // DRegisterの所にも書いたが、d1ビットはAレジスタに値を確保するかどうかを
-    // 判定するとのこと=>一旦d1(instruction[4])に変更
-    ARegister(in=inARegister, load=instruction[4], out=oARegister);
+    // 判定するとのこと=>一旦d1(instruction[5])に変更
+    ARegister(in=inARegister, load=instruction[5], out=oARegister);
 
     // PCゲートのinはOARegisterになるのは設計図に書いてあるからそのまま
     // loadビットにはgotoの様にジャンプするかどうかの判定結果が入り
@@ -92,10 +92,12 @@ CHIP CPU {
         out=oALU, zr=oZR, ng=oNG);
     // TODO P35を参照して、夫々の出力値を確認しているが、これで何を判定するかが分からない
     // そもそものALUの入力値になるM・Aはなんだっけと言うところから始める
+    // Mはメモリに実際に設定されている値で、Aがメモリを指定するためのアドレス
     // zr: out=0の場合のみtrue(16ビットの等号比較)
     // ng: out<0の場合のみtrue(16ビットの負判定)
 
     // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
     // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
+    // P103には命令のジャンプビットまたはALUから発信される２つの制御ビットに寄って決定されると記載があるがzr,ngは何者？
     PC(in=oARegister, load=load, inc=inc, reset=reset, out=incrementOrReset);
 }
