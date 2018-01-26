@@ -44,12 +44,15 @@ CHIP CPU {
     Not(in=instC, out=instA);
 
     // instAが0の時に、A命令(命令をAレジスタに挿入)、1ならC命令の制御ビットになる
-    Mux16(a=instruction, b=preOut, sel=instA, out=inARegister);
+    // TODO ここは後で移動させる、なぜならoALUがこの時点で定義されていないから
+    Mux16(a=instruction, b=oALU, sel=instA, out=inARegister);
 
     // loadビットは現状の値を保持か新規値を代入するかのどちらか
     // A命令の時にAレジスタに値を設定すれば良いので、instAをloadビットに割当れば
     // inRegisterの中身は必然的にinstructionになるから正しいはず
-    ARegister(in=inARegister, load=instA, out=oARegister);
+    // DRegisterの所にも書いたが、d1ビットはAレジスタに値を確保するかどうかを
+    // 判定するとのこと=>一旦d1(instruction[4])に変更
+    ARegister(in=inARegister, load=instruction[4], out=oARegister);
 
     // PCゲートのinはOARegisterになるのは設計図に書いてあるからそのまま
     // loadビットにはgotoの様にジャンプするかどうかの判定結果が入り
@@ -58,11 +61,35 @@ CHIP CPU {
     // ALUに渡す値を決定(A/M)
     // 設計図にはaビットでAレジスタかメモリ入力か判定出来るとある(P103)
     // => だからinstructionのaビットに該当する部分を設定する(aビットが何をしているのかは4章を確認すること)
-    Mux16(a=inM, b=oARegister, sel=instruction[11] out=inALU_B);
+    Mux16(a=inM, b=oARegister, sel=instruction[11] out=oAorM);
+
+    // dビットがALUの結果をレジスタに書き込むかどうかを指定
+    // なのでdビットはDRegisterのloadビットとして使う(ただ、dビットは3ビットある)
+    // P72を見たところ、d1,d2,d3の組み合わせの内、Dレジスタに値を設定するかどうかはd2ビットが1なのかどうかで判定している
+    // また、d1に関しては1担っていると、Aレジスタに値を設定するということもわかった()
+    // 先にoDRegisterを定義しておかないとALUゲート時にエラーが出るから移動させる
+    // instruction[5] == d2ビット
+    And(a=instruction[5], b=true, out=loadDRegister);
+    DRegister(in=oALU, load=loadDRegister, out=oDRegister);
 
     // ALU本体
     // P103を確認する
-    ALU(y=inALU_B);
+    // cビットがALUがどの関数を実行するのか
+    // 一応だけど、aビットが0の時は算術計算にAを用いて、1の時にはMの値を使う(Mux16でやってる内容)
+    // ALUの制御ビット(P36)とcompビット(P71)を見比べると下記のように分かった
+    // (zx, nx, zy, ny, f, no) == (c1, c2, c3, c4, c5, c6)
+    // 後は、ALUで言う所のx/yにどっちを割り当てるのかを正しくできれば良さそう
+    // zx, zero the x input?
+    // nx, negate the x input?
+    // zy, zero the y input?
+    // ny, negate the y input?
+    // f,  compute out = x + y (if 1) or x & y (if 0)
+    // no; negate the out output?
+    ALU(x=oDRegister, y=oAorM
+        zx=instruction[11], nx=instruction[10],
+        zy=instruction[9], ny=instruction[8],
+        f=instruction[7], no=instruction[6],
+        out=oALU, zr=oZR, ng=oNG);
 
     // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
     // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
