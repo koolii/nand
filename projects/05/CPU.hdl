@@ -95,7 +95,7 @@ CHIP CPU {
         zx=instruction[11], nx=instruction[10],
         zy=instruction[9], ny=instruction[8],
         f=instruction[7], no=instruction[6],
-        out=oALU, zr=oZR, ng=oNG);
+        out=oALU, out=outM, zr=oZR, ng=oNG);
     // TODO P35を参照して、夫々の出力値を確認しているが、これで何を判定するかが分からない
     // そもそものALUの入力値になるM・Aはなんだっけと言うところから始める
     // Mはメモリに実際に設定されている値で、Aがメモリを指定するためのアドレス
