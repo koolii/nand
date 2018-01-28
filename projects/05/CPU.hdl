@@ -73,6 +73,11 @@ CHIP CPU {
     // instruction[4] == d2ビット
     DRegister(in=oALU, load=instruction[4], out=oDRegister);
 
+    // P70のdest領域がどうやって分布するかを見ればd3がMemoryに格納するかどうかを判定するということが分かる
+    // instruction[3] == d3ビット
+    And(a=instC, b=instruction[3], out=writeM);
+
+
     // ALU本体
     // P103を確認する
     // cビットがALUがどの関数を実行するのか
@@ -100,6 +105,7 @@ CHIP CPU {
 
     // JEQ
     And(a=oZR, b=instruction[1], out=jeq);
+    And(a=oNR, b=instruction[0], out=jne);
 
     // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
     // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
