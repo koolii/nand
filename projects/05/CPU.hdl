@@ -63,7 +63,7 @@ CHIP CPU {
     // ALUに渡す値を決定(A/M)
     // 設計図にはaビットでAレジスタかメモリ入力か判定出来るとある(P103)
     // => だからinstructionのaビットに該当する部分を設定する(aビットが何をしているのかは4章を確認すること)
-    Mux16(a=inM, b=oARegister, sel=instruction[11] out=oAorM);
+    Mux16(a=inM, b=oARegister, sel=instruction[11], out=oAorM);
 
     // dビットがALUの結果をレジスタに書き込むかどうかを指定
     // なのでdビットはDRegisterのloadビットとして使う(ただ、dビットは3ビットある)
@@ -91,7 +91,7 @@ CHIP CPU {
     // ny, negate the y input?
     // f,  compute out = x + y (if 1) or x & y (if 0)
     // no; negate the out output?
-    ALU(x=oDRegister, y=oAorM
+    ALU(x=oDRegister, y=oAorM,
         zx=instruction[11], nx=instruction[10],
         zy=instruction[9], ny=instruction[8],
         f=instruction[7], no=instruction[6],
@@ -107,11 +107,11 @@ CHIP CPU {
     Not(in=oNG, out=positive);
 
     And(a=oZR, b=instruction[1], out=jeq);
-    And(a=oNR, b=instruction[2], out=jlt);
+    And(a=oNG, b=instruction[2], out=jlt);
     Or(a=jeq, b=jlt, out=jle);
 
     And(a=positive, b=instruction[0], out=jgt);
-    And(a=oNR, b=instruction[0], out=jne);
+    And(a=oNG, b=instruction[0], out=jne);
     Or(a=jgt, b=jne, out=jge);
 
     Or(a=jle, b=jge, out=wholeJMP);
