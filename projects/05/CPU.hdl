@@ -103,12 +103,23 @@ CHIP CPU {
     // zr: out=0の場合のみtrue(16ビットの等号比較) JMPの比較とかに使える？
     // ng: out<0の場合のみtrue(16ビットの負判定)
 
-    // JEQ
+    Not(in=oZR, out=notZero);
+    Not(in=oNG, out=positive);
+
     And(a=oZR, b=instruction[1], out=jeq);
+    And(a=oNR, b=instruction[2], out=jlt);
+    Or(a=jeq, b=jlt, out=jle);
+
+    And(a=positive, b=instruction[0], out=jgt);
     And(a=oNR, b=instruction[0], out=jne);
+    Or(a=jgt, b=jne, out=jge);
+
+    Or(a=jle, b=jge, out=wholeJMP);
+    And(a=instC, b=wholeJMP, out=jmp);
+    Not(in=jmp, out=inc);
 
     // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
     // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
     // P103には命令のジャンプビットまたはALUから発信される２つの制御ビットに寄って決定されると記載があるがzr,ngは何者？
-    PC(in=oARegister, load=load, inc=inc, reset=reset, out=incrementOrReset);
+    PC(in=oARegister, load=jmp, inc=inc, reset=reset, out[0..14]=pc);
 }
