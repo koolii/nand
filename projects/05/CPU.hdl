@@ -45,8 +45,9 @@ CHIP CPU {
     Not(in=instC, out=instA);
 
     // instAが0の時に、A命令(命令をAレジスタに挿入)、1ならC命令の制御ビットになる
-    // TODO ここは後で移動させる、なぜならoALUがこの時点で定義されていないから
-    Mux16(a=instruction, b=oALU, sel=instA, out=inARegister);
+    // => ココはinstCが正しいっぽい(テストが進んだから) 値の代入は0、計算は1になる => instC(instAは逆)
+    // => Mux.hdlに書いているようにsel==0ならaになる(instCとかで悩むのがめんどいのでinstruction[15]をそのまま指定)
+    Mux16(a=instruction, b=oALU, sel=instruction[15], out=inARegister);
 
     // loadビットは現状の値を保持か新規値を代入するかのどちらか
     // A命令の時にAレジスタに値を設定すれば良いので、instAをloadビットに割当れば
