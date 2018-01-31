@@ -53,67 +53,56 @@ CHIP CPU {
     // (P91)命令は現在の命令の中に含まれているかもしれない(=>instruction)し、１つ前の命令の実行結果に依存するかもしれない(=>oALU)
     // (P93)アドレス命令を実行すれば、コンピュータは15ビットの値をAレジスタに格納する
     // (P94)アドレス命令であれば、命令に埋め込まれた15ビットの定数値がAレジスタに格納される
-    And(a=instruction[15], b=instruction[5], out=oStoreARegisterOrNot);
-
+    // これらのことからA(アドレス)命令とC命令でd1が1の場合に値を格納するということになる
+    Or(a=instA, b=instruction[5], out=loadARegister);
 
     // loadビットは現状の値を保持か新規値を代入するかのどちらか
-    // A命令の時にAレジスタに値を設定すれば良いので、instAをloadビットに割当れば
-    // inRegisterの中身は必然的にinstructionになるから正しいはず
-    // DRegisterの所にも書いたが、d1ビットはAレジスタに値を確保するかどうかを
-    // 判定するとのこと=>一旦d1(instruction[5])に変更
     // 頭から15ビット分はaddressMへの定数として使われる(A命令の時15ビットが定数として使われると言う部分が適合する)
-    ARegister(in=inARegister, load=instruction[5], out=oARegister, out[0..14]=addressM);
-
-    // PCゲートのinはOARegisterになるのは設計図に書いてあるからそのまま
-    // loadビットにはgotoの様にジャンプするかどうかの判定結果が入り
-    // incにはそのままでインクリメントするかどうかが設定される
+    ARegister(in=inARegister, load=loadARegister, out=oARegister, out[0..14]=addressM);
 
     // ALUに渡す値を決定(A/M)
-    // 設計図にはaビットでAレジスタかメモリ入力か判定出来るとある(P103)
-    // => だからinstructionのaビットに該当する部分を設定する(aビットが何をしているのかは4章を確認すること)
-    Mux16(a=inM, b=oARegister, sel=instruction[11], out=oAorM);
-
-    // dビットがALUの結果をレジスタに書き込むかどうかを指定
-    // なのでdビットはDRegisterのloadビットとして使う(ただ、dビットは3ビットある)
-    // P72を見たところ、d1,d2,d3の組み合わせの内、Dレジスタに値を設定するかどうかはd2ビットが1なのかどうかで判定している
-    // また、d1に関しては1担っていると、Aレジスタに値を設定するということもわかった()
-    // 先にoDRegisterを定義しておかないとALUゲート時にエラーが出るから移動させる
-    // instruction[4] == d2ビット
-    DRegister(in=oALU, load=instruction[4], out=oDRegister);
-
-    // P70のdest領域がどうやって分布するかを見ればd3がMemoryに格納するかどうかを判定するということが分かる
-    // instruction[3] == d3ビット
-    And(a=instC, b=instruction[3], out=writeM);
-
+    // (P103)aビットがAレジスタから値を取得するのかMからなのかを決定するとある
+    // (P71)表を確認し、a=0ならA,a=1ならDから値を取得する
+    Mux16(a=oARegister, b=inM, sel=instruction[12], out=oAorM);
 
     // ALU本体
-    // P103を確認する
-    // cビットがALUがどの関数を実行するのか
-    // 一応だけど、aビットが0の時は算術計算にAを用いて、1の時にはMの値を使う(Mux16でやってる内容)
-    // ALUの制御ビット(P36)とcompビット(P71)を見比べると下記のように分かった
-    // (zx, nx, zy, ny, f, no) == (c1, c2, c3, c4, c5, c6)
-    // 後は、ALUで言う所のx/yにどっちを割り当てるのかを正しくできれば良さそう
-    // zx, zero the x input?
-    // nx, negate the x input?
-    // zy, zero the y input?
-    // ny, negate the y input?
-    // f,  compute out = x + y (if 1) or x & y (if 0)
-    // no; negate the out output?
+    // Mはメモリに実際に設定されている値で、Aがメモリを指定するためのアドレス
+    // (P103)cビットがALUにどの関数を実行するのかを作用させる
+    // (A/M)aビット(instruction[12])が0の時は算術計算にAを用いて、1の時にはMの値を使う
+    // (P36/P71)ALUの制御ビットとcompビットを見比べると下記のように分かった
+    //   (zx, nx, zy, ny, f, no) == (c1, c2, c3, c4, c5, c6)
+    // [input]
+    // zx: zero the x input?
+    // nx: negate the x input?
+    // zy: zero the y input?
+    // ny: negate the y input?
+    // f:  compute out = x + y (if 1) or x & y (if 0)
+    // no: negate the out output?
+    // [output]
+    // zr: out=0の場合のみtrue(16ビットの等号比較) JMPの比較とかに使える？
+    // ng: out<0の場合のみtrue(16ビットの負判定)
+    // 最終的にALUのアウトプットは全ての計算のアウトプットになるのでM+AとかD+1とか。あとはJMPの計算をする条件分岐等を行なう?
     ALU(x=oDRegister, y=oAorM,
         zx=instruction[11], nx=instruction[10],
         zy=instruction[9], ny=instruction[8],
         f=instruction[7], no=instruction[6],
         out=oALU, out=outM, zr=oZR, ng=oNG);
-    // TODO P35を参照して、夫々の出力値を確認しているが、これで何を判定するかが分からない
-    // そもそものALUの入力値になるM・Aはなんだっけと言うところから始める
-    // Mはメモリに実際に設定されている値で、Aがメモリを指定するためのアドレス
-    // 最終的にALUのアウトプットは全ての計算のアウトプットになるのでM+AとかD+1とか。あとはJMPの計算をする条件分岐等を行なう?
-    // zr: out=0の場合のみtrue(16ビットの等号比較) JMPの比較とかに使える？
-    // ng: out<0の場合のみtrue(16ビットの負判定)
 
     Not(in=oZR, out=notZero);
     Not(in=oNG, out=positive);
 
+    // (P103)dビットがALUの結果をレジスタに書き込むかどうかを指定(dビットは合計3ビット存在する)
+    // (P72)d1,d2,d3の組み合わせの内、Dレジスタに値を設定するかどうかはd2ビットが1なのかどうかで判定している
+    // instruction[4] == d2ビット
+    // C命令の時にそれぞれの命令が有効になるので、instCであることを保証するためにAndゲートを通す
+    And(a=instC, b=instruction[4], out=loadDRegister);
+    DRegister(in=oALU, load=loadDRegister, out=oDRegister);
+
+    // (P70)dest領域がどうやって分布するかを見ればd3がMemoryに格納するかどうかを判定するということが分かる
+    // instruction[3] == d3ビット
+    And(a=instC, b=instruction[3], out=writeM);
+
+    // Next below contents
     And(a=oZR, b=instruction[1], out=jeq);
     And(a=oNG, b=instruction[2], out=jlt);
     Or(a=jeq, b=jlt, out=jle);
