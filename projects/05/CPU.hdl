@@ -41,13 +41,20 @@ CHIP CPU {
 
     // 夫々0か1を取る
     // もしもC命令を実行するなら、instCが1になり、instAが0になるし、その逆も然り
-    And(a=instruction[15], b=true, out=instC);
-    Not(in=instC, out=instA);
+    Not(in=instruction[15], out=instA);
+    Not(in=instA, out=instC);
 
     // instAが0の時に、A命令(命令をAレジスタに挿入)、1ならC命令の制御ビットになる
     // => ココはinstCが正しいっぽい(テストが進んだから) 値の代入は0、計算は1になる => instC(instAは逆)
     // => Mux.hdlに書いているようにsel==0ならaになる(instCとかで悩むのがめんどいのでinstruction[15]をそのまま指定)
-    Mux16(a=instruction, b=oALU, sel=instruction[15], out=inARegister);
+    Mux16(a=instruction, b=oALU, sel=instC, out=inARegister);
+
+    // (P72)表を確認するとd1ビットはAレジスタに値を格納するという命令になる
+    // (P91)命令は現在の命令の中に含まれているかもしれない(=>instruction)し、１つ前の命令の実行結果に依存するかもしれない(=>oALU)
+    // (P93)アドレス命令を実行すれば、コンピュータは15ビットの値をAレジスタに格納する
+    // (P94)アドレス命令であれば、命令に埋め込まれた15ビットの定数値がAレジスタに格納される
+    And(a=instruction[15], b=instruction[5], out=oStoreARegisterOrNot);
+
 
     // loadビットは現状の値を保持か新規値を代入するかのどちらか
     // A命令の時にAレジスタに値を設定すれば良いので、instAをloadビットに割当れば
