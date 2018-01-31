@@ -86,11 +86,9 @@ CHIP CPU {
         zx=instruction[11], nx=instruction[10],
         zy=instruction[9], ny=instruction[8],
         f=instruction[7], no=instruction[6],
-        out=oALU, out=outM, zr=oZR, ng=oNG);
+        out=oALU, out=outM, zr=zero, ng=negative);
 
-    Not(in=oZR, out=notZero);
-    Not(in=oNG, out=positive);
-
+    // DRegister
     // (P103)dビットがALUの結果をレジスタに書き込むかどうかを指定(dビットは合計3ビット存在する)
     // (P72)d1,d2,d3の組み合わせの内、Dレジスタに値を設定するかどうかはd2ビットが1なのかどうかで判定している
     // instruction[4] == d2ビット
@@ -98,25 +96,40 @@ CHIP CPU {
     And(a=instC, b=instruction[4], out=loadDRegister);
     DRegister(in=oALU, load=loadDRegister, out=oDRegister);
 
+    // writeM
     // (P70)dest領域がどうやって分布するかを見ればd3がMemoryに格納するかどうかを判定するということが分かる
     // instruction[3] == d3ビット
     And(a=instC, b=instruction[3], out=writeM);
 
-    // Next below contents
-    And(a=oZR, b=instruction[1], out=jeq);
-    And(a=oNG, b=instruction[2], out=jlt);
-    Or(a=jeq, b=jlt, out=jle);
+    // out<0の反対はout>=0で0も含まれているから、等号を外す
+    Not(in=negative, out=positiveWithZero);
+    Not(in=zero, out=notZero);
+    And(a=positiveWithZero, b=notZero, out=positive);
 
-    And(a=positive, b=instruction[0], out=jgt);
-    And(a=oNG, b=instruction[0], out=jne);
-    Or(a=jgt, b=jne, out=jge);
+    // 最初は夫々のニーモニックを作成し、全てをOr条件で結ぼうと考えていたが、
+    // 単純に下記のようにoutがどのようなものなのか分かりきっているので、
+    // jX毎にjump条件を満たす条件を考えて上げて、夫々をOr条件で結んで上げるだけで良い
+    // * negativeは計算結果が(out<0)であるということを示している
+    // * zeroは計算結果が(out==0)であるということを示している
+    // * positiveは計算結果が(out>0)であるということを示している
+    // あとはそれぞれがtrueになるようなパターンを作成する
+    // というよりも、j1,j2,j3の内、少なくとも1つでも1ならjumpすると分かる事に気づけると楽
 
-    Or(a=jle, b=jge, out=wholeJMP);
-    And(a=instC, b=wholeJMP, out=jmp);
-    Not(in=jmp, out=inc);
+    // j1が1であり、out<0ならjump
+    And(a=instruction[2], b=negative, out=j1);
+    // j2が1であり、out=0ならjump
+    And(a=instruction[1], b=zero, out=j2);
+    // j3が1であり、out>0ならjump
+    And(a=instruction[0], b=positive, out=j3);
 
-    // loadビットにどうやって値を積めるかだが、`0;JMP`みたいなのがあったようにAレジスタに値が入ってて、
-    // その値を比較して合致していればJMPする仕組みになっている。だからそこを計算してあげる必要がある？？
-    // P103には命令のジャンプビットまたはALUから発信される２つの制御ビットに寄って決定されると記載があるがzr,ngは何者？
-    PC(in=oARegister, load=jmp, inc=inc, reset=reset, out[0..14]=pc);
+    Or(a=j1, b=j2, out=j12);
+    Or(a=j12, b=j3, out=jump123);
+
+    // C命令であることを最後に確認
+    And(a=instC, b=jump123, out=jump);
+
+    // PC
+    // incがtrueになるのは優先度が reset > load > inc > preOut
+    // 今回はpreOutに行く必要がないから最下のincは必ずtrueになる
+    PC(in=oARegister, load=jump, reset=reset, inc=true, out[0..14]=pc);
 }
